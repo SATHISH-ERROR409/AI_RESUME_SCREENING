@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Waste Management</title>
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f4f8;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+.container {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 80%;
+    max-width: 600px;
+}
+h1 {
+    font-size: 2.5em;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+.level-box {
+    background-color: #f4f7f6;
+    padding: 20px;
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    font-size: 2em;
+    margin-bottom: 30px;
+    color: #333;
+}
+.button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1.1em;
+    margin: 10px;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+.button:hover {
+    background-color: #45a049;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div id="welcomePage">
+        <h1>Welcome</h1>
+        <h1>To</h1>
+        <h1>Smart Waste Management</h1>
+        <button class="button" id="letsGoBtn">Let's Go</button>
+    </div>
+    <div id="page-content" style="display: none;">
+        <h1>Waste Monitoring</h1>
+        <button class="button" id="dryBinBtn">Dry Bin Level</button>
+        <button class="button" id="wetBinBtn">Wet Bin Level</button>
+        <button class="button" id="gasesBtn">Gases Detected</button>
+    </div>
+    <div id="dry-bin" style="display: none;">
+        <h1>Dry Bin Level</h1>
+        <div class="level-box" id="dryBin">0%</div>
+        <button class="button" id="backToMain">Back</button>
+    </div>
+    <div id="wet-bin" style="display: none;">
+        <h1>Wet Bin Level</h1>
+        <div class="level-box" id="wetBin">0%</div>
+        <button class="button" id="backToMain2">Back</button>
+    </div>
+    <div id="gases" style="display: none;">
+        <h1>Gases Detected</h1>
+        <div class="level-box" id="gas">None</div>
+        <button class="button" id="backToMain3">Back</button>
+    </div>
+</div>
+
+<script>
+const API_KEY = 'X93G2JLU7SLW2M7L';  // Replace with your actual ThingSpeak Read API Key
+const CHANNEL_ID = '2828426'; // Replace with your actual ThingSpeak Channel ID
+const THINGSPEAK_URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=1`;
+
+function fetchThingSpeakData() {
+    fetch(THINGSPEAK_URL)
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        console.log("ThingSpeak Data:", data); // Debugging - Check API response in browser console
+        if (data.feeds.length > 0) {
+            let feed = data.feeds[0];
+
+            // Correctly mapped fields
+            let dryBin = feed.field1 || '0'; // dryBin percentage
+            let wetBin = feed.field2 || '0'; // wetBin percentage
+            let gas = feed.field3 || 'None';  // gas type detected
+
+            // Update HTML elements with fetched values
+            document.getElementById('dryBin').textContent = dryBin + '%';
+            document.getElementById('wetBin').textContent = wetBin + '%';
+            document.getElementById('gas').textContent = gas;
+        } else {
+            console.error("No data received from ThingSpeak.");
+        }
+    })
+    .catch(error => console.error("Error fetching ThingSpeak data:", error));
+}
+
+// Fetch data initially and update every 10 seconds
+fetchThingSpeakData();
+setInterval(fetchThingSpeakData, 10000);
+
+// Navigation Handling
+document.getElementById('letsGoBtn').addEventListener('click', () => {
+    document.getElementById('welcomePage').style.display = 'none';
+    document.getElementById('page-content').style.display = 'block';
+});
+document.getElementById('dryBinBtn').addEventListener('click', () => {
+    document.getElementById('page-content').style.display = 'none';
+    document.getElementById('dry-bin').style.display = 'block';
+});
+document.getElementById('wetBinBtn').addEventListener('click', () => {
+    document.getElementById('page-content').style.display = 'none';
+    document.getElementById('wet-bin').style.display = 'block';
+});
+document.getElementById('gasesBtn').addEventListener('click', () => {
+    document.getElementById('page-content').style.display = 'none';
+    document.getElementById('gases').style.display = 'block';
+});
+document.getElementById('backToMain').addEventListener('click', () => {
+    document.getElementById('dry-bin').style.display = 'none';
+    document.getElementById('page-content').style.display = 'block';
+});
+document.getElementById('backToMain2').addEventListener('click', () => {
+    document.getElementById('wet-bin').style.display = 'none';
+    document.getElementById('page-content').style.display = 'block';
+});
+document.getElementById('backToMain3').addEventListener('click', () => {
+    document.getElementById('gases').style.display = 'none';
+    document.getElementById('page-content').style.display = 'block';
+});
+</script>
+</body>
+</html>
